@@ -80,7 +80,7 @@ func init() {
 	rootCmd.Flags().StringVar(&privateKeyPath, "privateKeyPath", "data/keys/key_sec.pem", "Path to a file storing the private keys. "+
 		"Each line contains a key phase as integer and a private key encoded in hexadecimal separated by a space.")
 	rootCmd.Flags().BoolVar(&doSharding, "doSharding", true, "If set to true, all assertions in the zonefile "+
-		"are grouped into pshards based on keepPshards, nofAssertionsPerPshard, bFAlgo, BFHash, and "+
+		"are grouped into shards based on keepShards, nofAssertionsPerShard, bFAlgo, BFHash, and "+
 		"bloomFilterSize parameters.")
 	rootCmd.Flags().BoolVar(&keepShards, "keepShards", false, "this option only has an effect when DoSharding "+
 		"is true. If the zonefile already contains shards, they are kept. Otherwise, all existing "+
@@ -131,9 +131,9 @@ func init() {
 		"if set to true. The check involves: sorting shards, sorting zones, checking that no signature "+
 		"is expired, and that all string fields contain no protocol keywords.")
 	rootCmd.Flags().BoolVar(&sortShards, "sortShards", false, "If set to true, makes sure that the assertions "+
-		"withing the shard are sorted.")
+		"within the shard are sorted.")
 	rootCmd.Flags().BoolVar(&sortZone, "sortZone", false, "If set to true, makes sure that the assertions "+
-		"withing the zone are sorted.")
+		"within the zone are sorted.")
 	rootCmd.Flags().BoolVar(&sigNotExpired, "sigNotExpired", false, "If set to true, checks that all signatures "+
 		"have a validUntil time in the future")
 	rootCmd.Flags().BoolVar(&checkStringFields, "checkStringFields", false, "If set to true, checks that none "+
