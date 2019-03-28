@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"github.com/netsec-ethz/rains/internal/pkg/object"
 	"github.com/netsec-ethz/rains/internal/pkg/section"
@@ -15,6 +16,24 @@ import (
 
 func main() {
 
+	// usage
+	flag.Usage = func() {
+		fmt.Println("This tool searches the SCIONLab database for user ASes and creates a zonefile using that data.")
+		flag.PrintDefaults()
+	}
+
+	// flags
+	zName := flag.String("z", "", "zone for which the zonefile is created")
+	context := flag.String("c", ".", "context in which assertions are valid")
+	out := flag.String("o", "zonefile.txt", "output path")
+	prefix := flag.String("p", "", "prefix to use for subject names")
+
+	flag.Parse()
+
+	if *zName == "" {
+		log.Fatal("Zone name cannot be empty")
+	}
+
 	// Open database
 	db, err := sql.Open("mysql", "root:development_pass@/scion_coord_test")
 	check(err)
@@ -26,7 +45,7 @@ func main() {
 	check(err)
 
 	// prepare zone
-	zone := section.Zone{SubjectZone: "node.snet.", Context: "."}
+	zone := section.Zone{SubjectZone: *zName, Context: *context}
 
 	for rows.Next() {
 		var isd int
@@ -42,7 +61,7 @@ func main() {
 		}
 
 		obj := object.Object{Type: object.OTScionAddr4, Value: fmt.Sprintf("%d-%s,[%s]", isd, as, ip)}
-		name := fmt.Sprintf("slab%s", parts[len(parts)-1])
+		name := fmt.Sprintf("%s%s", *prefix, parts[len(parts)-1])
 		assertion := section.Assertion{SubjectName: name, Content: []object.Object{obj}}
 		zone.Content = append(zone.Content, &assertion)
 	}
@@ -52,6 +71,8 @@ func main() {
 		log.Fatal("Zone consistency check failed")
 	}
 	enc := zonefile.IO{}.Encode([]section.Section{&zone})
+	sections := []section.Section{&zone}
+	zonefile.IO{}.EncodeAndStore(*out, sections)
 	fmt.Println(enc)
 
 }
